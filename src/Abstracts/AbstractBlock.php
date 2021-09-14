@@ -28,14 +28,9 @@ namespace Morningtrain\WP\Blocks\Abstracts;
 abstract class AbstractBlock
 {
 
-    /** @var string */
-    protected static $slug;
-
-    /** @var string */
-    protected static $title;
-
-    /** @var string */
-    protected static $description;
+    protected static string $slug;
+    protected static string $title;
+    protected static string $description;
 
     /** @var string|Callable */
     protected static $template;
@@ -46,8 +41,7 @@ abstract class AbstractBlock
      */
     protected static $category;
 
-    /** @var array */
-    protected static $default_category = [
+    protected static array $default_category = [
         'slug' => 'mtt',
         'title' => 'Morning Train',
     ];
@@ -56,7 +50,7 @@ abstract class AbstractBlock
      * @var array
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#keywords-optional
      */
-    protected static $keywords = [
+    protected static array $keywords = [
         'mtt',
         'morning train'
     ];
@@ -73,13 +67,16 @@ abstract class AbstractBlock
      * @var array
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#styles-optional
      */
-    protected static $styles;
+    protected static array $styles;
 
     /** @var bool */
-    protected static $hasFields = true;
+    protected static bool $hasFields = true;
 
 
-    public static function register()
+    /**
+     * Register the block. This is how you initialize it
+     */
+    public static function register(): void
     {
         // if(function_exists( 'is_gutenberg_page' )) return; // Gutenberg is required for this
         if (!function_exists('acf_register_block_type')) {
@@ -90,7 +87,10 @@ abstract class AbstractBlock
         static::registerFilters();
     }
 
-    protected static function registerActions()
+    /**
+     * Registers relevant actions
+     */
+    protected static function registerActions(): void
     {
         \add_action('init', [static::class, 'registerBlockType']);
         // Loader::addAction('acf/init', static::class,'registerBlockType');
@@ -99,7 +99,10 @@ abstract class AbstractBlock
         }
     }
 
-    protected static function registerFilters()
+    /**
+     * Registers relevant filters
+     */
+    protected static function registerFilters(): void
     {
         if (static::hasFields()) {
             \add_filter('acf/settings/load_json', [static::class, 'loadACFFolder']);
@@ -112,13 +115,24 @@ abstract class AbstractBlock
         }
     }
 
-    public static function getDir()
+    /**
+     * Get the name of this blocks dir
+     *
+     * @return string
+     * @throws \ReflectionException
+     */
+    public static function getDir(): string
     {
         $reflection = new \ReflectionClass(get_called_class());
         return dirname($reflection->getFileName());
     }
 
-    public static function createAcfFieldGroupsDir()
+    /**
+     * Create directory for this blocks acf field group
+     *
+     * @throws \ReflectionException
+     */
+    public static function createAcfFieldGroupsDir(): void
     {
         $dir = static::getDir() . '/acf-field-groups';
         if (!is_dir($dir)) {
@@ -126,18 +140,40 @@ abstract class AbstractBlock
         }
     }
 
-    public static function getAcfFieldGroupsDir()
+    /**
+     * Get the directory for this blocks acf field group
+     *
+     * @return string
+     * @throws \ReflectionException
+     */
+    public static function getAcfFieldGroupsDir(): string
     {
         static::createAcfFieldGroupsDir();
+
         return static::getDir() . '/acf-field-groups';
     }
 
+    /**
+     * Add this blocks dir for loading field groups.
+     * Used in ACF Filter
+     *
+     * @param $paths
+     * @return mixed
+     * @throws \ReflectionException
+     */
     public static function loadACFFolder($paths)
     {
         $paths[] = static::getAcfFieldGroupsDir();
+
         return $paths;
     }
 
+    /**
+     * Sets this blocks acf field group dir as the save location IF currently saving block fields
+     * Called on ACF save action
+     *
+     * @param $field_group
+     */
     public static function onFieldGroupSave($field_group)
     {
         if (static::isBlocksfieldGroup($field_group)) {
@@ -145,7 +181,12 @@ abstract class AbstractBlock
         }
     }
 
-    protected static function isBlocksfieldGroup($field_group)
+    /**
+     * Checks if given param is a block field group
+     * @param $field_group
+     * @return bool
+     */
+    protected static function isBlocksfieldGroup($field_group): bool
     {
         if (!is_array($field_group) || empty($field_group['location'])) {
             return false;
@@ -158,15 +199,27 @@ abstract class AbstractBlock
                 }
             }
         }
+
         return false;
     }
 
+    /**
+     * Set local JSON save location
+     */
     protected static function setLocalJsonLocation()
     {
-        add_filter('acf/settings/save_json', [static::class, 'setLocalJsonSaveDir'], 99);
+        \add_filter('acf/settings/save_json', [static::class, 'setLocalJsonSaveDir'], 99);
     }
 
-    public static function setLocalJsonSaveDir($path)
+    /**
+     * Set local json save location
+     * On filter callback
+     *
+     * @param $path
+     * @return string
+     * @throws \ReflectionException
+     */
+    public static function setLocalJsonSaveDir($path): string
     {
         return static::getAcfFieldGroupsDir();
     }
@@ -175,9 +228,10 @@ abstract class AbstractBlock
     /**
      * Returns the blocks slug.
      * Slug MUST be defined in child
-     * @return mixed
+     *
+     * @return string
      */
-    public static function getSlug()
+    public static function getSlug(): string
     {
         return static::$slug;
     }
@@ -185,12 +239,14 @@ abstract class AbstractBlock
     /** Whether ACF field group should be loaded and handled
      * @return bool
      */
-    public static function hasFields()
+    public static function hasFields(): bool
     {
         return (bool)static::$hasFields;
     }
 
     /**
+     * Called before getting a prop.
+     *
      * @param $prop
      * @param null $default
      * @return null|mixed|void
@@ -203,17 +259,32 @@ abstract class AbstractBlock
         return $val;
     }
 
-    public static function getTitle()
+    /**
+     * Get block Title
+     *
+     * @return mixed|void|null
+     * @throws \ReflectionException
+     */
+    public static function getTitle(): string
     {
         return static::filterProperty('title', ucfirst(static::getSlug()));
     }
 
-    public static function getDescription()
+    /**
+     * Get Block description
+     *
+     * @return mixed|void|null
+     * @throws \ReflectionException
+     */
+    public static function getDescription() : string
     {
         return static::filterProperty('description');
     }
 
     /**
+     * Get template
+     * Template can be a path or callable
+     *
      * @return string|callable
      */
     public static function getTemplate()
@@ -222,19 +293,24 @@ abstract class AbstractBlock
     }
 
     /**
+     * Set block template
+     *
      * @param string|callable $template
      * @return bool
      */
-    public static function setTemplate($template)
+    public static function setTemplate($template): bool
     {
         if (!is_string($template) && !is_callable($template)) {
             return false;
         }
         static::$template = $template;
+
         return true;
     }
 
-    /** Returns the category
+    /**
+     * Returns the category
+     *
      * @return string|array
      * @throws \ReflectionException
      */
@@ -243,32 +319,58 @@ abstract class AbstractBlock
         return static::filterProperty('category', static::$default_category);
     }
 
-    /** Returns the keywords.
+    /**
+     * Returns the keywords.
      * Keywords can be used when searching for this block
+     *
      * @return null|array
      * @throws \ReflectionException
      */
-    public static function getKeywords()
+    public static function getKeywords(): ?array
     {
         return static::filterProperty('keywords');
     }
 
+    /**
+     * Get the supports
+     *
+     * @return mixed|void|null
+     * @throws \ReflectionException
+     */
     public static function getSupports()
     {
         return static::filterProperty('supports');
     }
 
+    /**
+     * Get block icon
+     *
+     * @return mixed|void|null
+     * @throws \ReflectionException
+     */
     public static function getIcon()
     {
         return static::filterProperty('icon', 'wordpress');
     }
 
+    /**
+     * Get Styles
+     * These are not CSS styles but the available styles/versions
+     *
+     * @return mixed|void|null
+     * @throws \ReflectionException
+     */
     public static function getStyles()
     {
         return static::filterProperty('styles');
     }
 
-    public static function getClassList()
+    /**
+     * Get the block classlist
+     *
+     * @return string[]
+     */
+    public static function getClassList(): array
     {
         return [
             'mttblock',
@@ -277,19 +379,25 @@ abstract class AbstractBlock
         // TODO: Maybe add current blocks style class. Eg. .is-style-{style}
     }
 
+    /**
+     * Echo the block class list for use in a class=""
+     * Use this in your block template!
+     */
     public static function theClassList()
     {
         echo implode(' ', static::getClassList());
     }
 
-    /** Registers the Block Category
+    /**
+     * Registers the Block Category
+     *
      * @param $categories
      * @return array
      * @throws \ReflectionException
      *
      * @link https://developer.wordpress.org/block-editor/developers/filters/block-filters/#managing-block-categories
      */
-    public static function registerBlockCategory($categories)
+    public static function registerBlockCategory($categories): array
     {
         return array_merge(
             $categories,
@@ -298,11 +406,12 @@ abstract class AbstractBlock
     }
 
     /**
+     * Registers the block on the correct action
      * @see https://www.advancedcustomfields.com/resources/acf_register_block_type/
      *
      * @throws \Exception
      */
-    public static function registerBlockType()
+    public static function registerBlockType(): ?\WP_Error
     {
         if (!function_exists('acf_register_block_type')) {
             return new \WP_Error(
