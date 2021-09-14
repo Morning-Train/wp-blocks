@@ -276,7 +276,7 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getDescription() : string
+    public static function getDescription() : ?string
     {
         return static::filterProperty('description');
     }
@@ -465,5 +465,6 @@ abstract class AbstractBlock
         }
 
         \acf_register_block_type($args);
+        return null;
     }
 }

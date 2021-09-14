@@ -22,5 +22,4 @@ class BlocksLoader
             $hook_files[] = $file->getRealPath();
         }
 
-    }
-}
+    }}
