@@ -1,0 +1,20 @@
+{
+  "name": "morningtrain/wp-blocks",
+  "description": "A Gutenber Blocks package",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Morningtrain",
+      "email": "mh@morningtrain.dk"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Morningtrain\\WP\\Blocks\\": "src/"
+    }
+  },
+  "require": {
+    "symfony/finder": "v5.0.0"
+  }
+}
