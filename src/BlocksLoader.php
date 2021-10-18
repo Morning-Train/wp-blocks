@@ -8,7 +8,7 @@ use Symfony\Component\Finder\Finder;
 class BlocksLoader
 {
 
-    public static function registerBlocksInDir(string $dir_path)
+    public static function registerACFBlocksInDir(string $dir_path)
     {
         $finder = new Finder();
         $finder->files()->name('*Block.php')->in($dir_path);

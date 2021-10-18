@@ -3,6 +3,9 @@
 namespace Morningtrain\WP\Blocks\Abstracts;
 
 
+use Morningtrain\WP\Core\Abstracts\AbstractModule;
+use Morningtrain\WP\View\View;
+
 /**
  * Class Block
  *
@@ -25,23 +28,24 @@ namespace Morningtrain\WP\Blocks\Abstracts;
  * @link https://developer.wordpress.org/block-editor/developers/block-api/block-registration/
  *
  */
-abstract class AbstractBlock
+abstract class AbstractBlock extends AbstractModule
 {
 
-    protected static string $slug;
-    protected static string $title;
-    protected static string $description;
+    protected string $slug;
+    protected string $title;
+    protected string $description;
 
     /** @var string|Callable */
-    protected static $template;
+    // NOTE: This is not in use at this point in time
+    protected $template;
 
     /**
      * @var string|array
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#category
      */
-    protected static $category;
+    protected $category;
 
-    protected static array $default_category = [
+    protected array $default_category = [
         'slug' => 'mtt',
         'title' => 'Morning Train',
     ];
@@ -50,7 +54,7 @@ abstract class AbstractBlock
      * @var array
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#keywords-optional
      */
-    protected static array $keywords = [
+    protected array $keywords = [
         'mtt',
         'morning train'
     ];
@@ -61,57 +65,62 @@ abstract class AbstractBlock
      * @var string|\stdClass
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#icon-optional
      */
-    protected static $icon = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 89.16 100"><defs><clipPath id="clip-mtt"><rect width="89.16" height="100"/></clipPath></defs><g id="mtt" clip-path="url(#clip-mtt)"><g id="Group_9961" data-name="Group 9961" transform="translate(-303.966 -50)"><g id="Group_9955" data-name="Group 9955" transform="translate(303.966 50)"><path id="Path_6983" data-name="Path 6983" d="M28.366,23.385,42.43,44.3,58.418,23.385H86.745A51.322,51.322,0,0,0,43.766,0,52.348,52.348,0,0,0,.8,23.385Z" transform="translate(0.72)" fill="#f7941d"/><path id="Path_6984" data-name="Path 6984" d="M73.2,55.411V21L43.346,59.212v-.2L15.385,21V55.411H0a51.555,51.555,0,0,0,89.163,0Z" transform="translate(0 18.926)" fill="#f7941d"/></g></g></g></svg>';
+    protected $icon = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 89.16 100"><defs><clipPath id="clip-mtt"><rect width="89.16" height="100"/></clipPath></defs><g id="mtt" clip-path="url(#clip-mtt)"><g id="Group_9961" data-name="Group 9961" transform="translate(-303.966 -50)"><g id="Group_9955" data-name="Group 9955" transform="translate(303.966 50)"><path id="Path_6983" data-name="Path 6983" d="M28.366,23.385,42.43,44.3,58.418,23.385H86.745A51.322,51.322,0,0,0,43.766,0,52.348,52.348,0,0,0,.8,23.385Z" transform="translate(0.72)" fill="#f7941d"/><path id="Path_6984" data-name="Path 6984" d="M73.2,55.411V21L43.346,59.212v-.2L15.385,21V55.411H0a51.555,51.555,0,0,0,89.163,0Z" transform="translate(0 18.926)" fill="#f7941d"/></g></g></g></svg>';
 
     /**
      * @var array
      * @see https://developer.wordpress.org/block-editor/developers/block-api/block-registration/#styles-optional
      */
-    protected static array $styles;
+    protected array $styles;
 
     /** @var bool */
-    protected static bool $hasFields = true;
+    protected bool $hasFields = true;
 
 
     /**
      * Register the block. This is how you initialize it
      */
-    public static function register(): void
+    public function init(): void
     {
         // if(function_exists( 'is_gutenberg_page' )) return; // Gutenberg is required for this
         if (!function_exists('acf_register_block_type')) {
             return;
         } // ACF Register Block Type is required for this
 
-        static::registerActions();
-        static::registerFilters();
+        parent::init();
+
+        View::addNamespace($this->getSlug(), $this->getBaseDir());
+
+        $this->registerActions();
+        $this->registerFilters();
     }
+
 
     /**
      * Registers relevant actions
      */
-    protected static function registerActions(): void
+    protected function registerActions(): void
     {
-        \add_action('init', [static::class, 'registerBlockType']);
+        \add_action('init', [$this, 'registerBlockType']);
         // Loader::addAction('acf/init', static::class,'registerBlockType');
-        if (static::hasFields()) {
-            \add_action('acf/update_field_group', [static::class, 'onFieldGroupSave'], 1);
+        if ($this->hasFields()) {
+            \add_action('acf/update_field_group', [$this, 'onFieldGroupSave'], 1);
         }
     }
 
     /**
      * Registers relevant filters
      */
-    protected static function registerFilters(): void
+    protected function registerFilters(): void
     {
-        if (static::hasFields()) {
-            \add_filter('acf/settings/load_json', [static::class, 'loadACFFolder']);
+        if ($this->hasFields()) {
+            \add_filter('acf/settings/load_json', [$this, 'loadACFFolder']);
         }
 
         // Register category if it is an array
-        $category = static::getCategory();
+        $category = $this->getCategory();
         if (is_array($category)) {
-            \add_filter('block_categories', [static::class, 'registerBlockCategory'], 10, 2);
+            \add_filter('block_categories_all', [$this, 'registerBlockCategory'], 10, 2);
         }
     }
 
@@ -121,7 +130,7 @@ abstract class AbstractBlock
      * @return string
      * @throws \ReflectionException
      */
-    public static function getDir(): string
+    public function getDir(): string
     {
         $reflection = new \ReflectionClass(get_called_class());
         return dirname($reflection->getFileName());
@@ -132,9 +141,9 @@ abstract class AbstractBlock
      *
      * @throws \ReflectionException
      */
-    public static function createAcfFieldGroupsDir(): void
+    public function createAcfFieldGroupsDir(): void
     {
-        $dir = static::getDir() . '/acf-field-groups';
+        $dir = $this->getDir() . '/acf-field-groups';
         if (!is_dir($dir)) {
             mkdir($dir);
         }
@@ -146,11 +155,11 @@ abstract class AbstractBlock
      * @return string
      * @throws \ReflectionException
      */
-    public static function getAcfFieldGroupsDir(): string
+    public function getAcfFieldGroupsDir(): string
     {
-        static::createAcfFieldGroupsDir();
+        $this->createAcfFieldGroupsDir();
 
-        return static::getDir() . '/acf-field-groups';
+        return $this->getDir() . '/acf-field-groups';
     }
 
     /**
@@ -161,9 +170,9 @@ abstract class AbstractBlock
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function loadACFFolder($paths)
+    public function loadACFFolder($paths)
     {
-        $paths[] = static::getAcfFieldGroupsDir();
+        $paths[] = $this->getAcfFieldGroupsDir();
 
         return $paths;
     }
@@ -174,10 +183,10 @@ abstract class AbstractBlock
      *
      * @param $field_group
      */
-    public static function onFieldGroupSave($field_group)
+    public function onFieldGroupSave($field_group)
     {
-        if (static::isBlocksfieldGroup($field_group)) {
-            static::setLocalJsonLocation();
+        if ($this->isBlocksfieldGroup($field_group)) {
+            $this->setLocalJsonLocation();
         }
     }
 
@@ -186,12 +195,12 @@ abstract class AbstractBlock
      * @param $field_group
      * @return bool
      */
-    protected static function isBlocksfieldGroup($field_group): bool
+    protected function isBlocksfieldGroup($field_group): bool
     {
         if (!is_array($field_group) || empty($field_group['location'])) {
             return false;
         }
-        $slug = static::getSlug();
+        $slug = $this->getSlug();
         foreach ($field_group['location'] as $location) {
             foreach ($location as $sub_location) {
                 if ($sub_location['param'] === 'block' && $sub_location['value'] === "acf/{$slug}") {
@@ -206,9 +215,9 @@ abstract class AbstractBlock
     /**
      * Set local JSON save location
      */
-    protected static function setLocalJsonLocation()
+    protected function setLocalJsonLocation()
     {
-        \add_filter('acf/settings/save_json', [static::class, 'setLocalJsonSaveDir'], 99);
+        \add_filter('acf/settings/save_json', [$this, 'setLocalJsonSaveDir'], 99);
     }
 
     /**
@@ -219,9 +228,9 @@ abstract class AbstractBlock
      * @return string
      * @throws \ReflectionException
      */
-    public static function setLocalJsonSaveDir($path): string
+    public function setLocalJsonSaveDir($path): string
     {
-        return static::getAcfFieldGroupsDir();
+        return $this->getAcfFieldGroupsDir();
     }
 
 
@@ -231,17 +240,17 @@ abstract class AbstractBlock
      *
      * @return string
      */
-    public static function getSlug(): string
+    public function getSlug(): string
     {
-        return static::$slug;
+        return $this->slug;
     }
 
     /** Whether ACF field group should be loaded and handled
      * @return bool
      */
-    public static function hasFields(): bool
+    public function hasFields(): bool
     {
-        return (bool)static::$hasFields;
+        return (bool)$this->hasFields;
     }
 
     /**
@@ -252,9 +261,11 @@ abstract class AbstractBlock
      * @return null|mixed|void
      * @throws \ReflectionException
      */
-    public static function filterProperty($prop, $default = null)
+    public function filterProperty($prop, $default = null)
     {
-        $val = static::${$prop} ?? $default;
+        $val = property_exists($this, $prop) && !empty($this->{$prop})
+            ? $this->{$prop}
+            : $default;
         // TODO: Maybe reintroduce apply_filter ...
         return $val;
     }
@@ -265,9 +276,9 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getTitle(): string
+    public function getTitle(): string
     {
-        return static::filterProperty('title', ucfirst(static::getSlug()));
+        return $this->filterProperty('title', ucfirst($this->getSlug()));
     }
 
     /**
@@ -276,9 +287,9 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getDescription() : ?string
+    public function getDescription(): ?string
     {
-        return static::filterProperty('description');
+        return $this->filterProperty('description');
     }
 
     /**
@@ -287,9 +298,9 @@ abstract class AbstractBlock
      *
      * @return string|callable
      */
-    public static function getTemplate()
+    public function getTemplate()
     {
-        return static::filterProperty('template', static::getDir() . '/' . 'template.php');
+        return $this->filterProperty('template', $this->getDir() . '/' . 'template.php');
     }
 
     /**
@@ -298,12 +309,12 @@ abstract class AbstractBlock
      * @param string|callable $template
      * @return bool
      */
-    public static function setTemplate($template): bool
+    public function setTemplate($template): bool
     {
         if (!is_string($template) && !is_callable($template)) {
             return false;
         }
-        static::$template = $template;
+        $this->template = $template;
 
         return true;
     }
@@ -314,9 +325,9 @@ abstract class AbstractBlock
      * @return string|array
      * @throws \ReflectionException
      */
-    public static function getCategory()
+    public function getCategory()
     {
-        return static::filterProperty('category', static::$default_category);
+        return $this->filterProperty('category', $this->default_category);
     }
 
     /**
@@ -326,9 +337,9 @@ abstract class AbstractBlock
      * @return null|array
      * @throws \ReflectionException
      */
-    public static function getKeywords(): ?array
+    public function getKeywords(): ?array
     {
-        return static::filterProperty('keywords');
+        return $this->filterProperty('keywords');
     }
 
     /**
@@ -337,9 +348,9 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getSupports()
+    public function getSupports()
     {
-        return static::filterProperty('supports');
+        return $this->filterProperty('supports');
     }
 
     /**
@@ -348,9 +359,9 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getIcon()
+    public function getIcon()
     {
-        return static::filterProperty('icon', 'wordpress');
+        return $this->filterProperty('icon', 'wordpress');
     }
 
     /**
@@ -360,9 +371,9 @@ abstract class AbstractBlock
      * @return mixed|void|null
      * @throws \ReflectionException
      */
-    public static function getStyles()
+    public function getStyles()
     {
-        return static::filterProperty('styles');
+        return $this->filterProperty('styles');
     }
 
     /**
@@ -370,11 +381,11 @@ abstract class AbstractBlock
      *
      * @return string[]
      */
-    public static function getClassList(): array
+    public function getClassList(): array
     {
         return [
             'mttblock',
-            static::getSlug(),
+            $this->getSlug(),
         ];
         // TODO: Maybe add current blocks style class. Eg. .is-style-{style}
     }
@@ -383,9 +394,9 @@ abstract class AbstractBlock
      * Echo the block class list for use in a class=""
      * Use this in your block template!
      */
-    public static function theClassList()
+    public function theClassList()
     {
-        echo implode(' ', static::getClassList());
+        echo implode(' ', $this->getClassList());
     }
 
     /**
@@ -397,12 +408,24 @@ abstract class AbstractBlock
      *
      * @link https://developer.wordpress.org/block-editor/developers/filters/block-filters/#managing-block-categories
      */
-    public static function registerBlockCategory($categories): array
+    public function registerBlockCategory($categories): array
     {
         return array_merge(
             $categories,
-            [static::getCategory()]
+            [$this->getCategory()]
         );
+    }
+
+    /**
+     * Render the block.
+     * Overwrite this to render something different than template.php
+     *
+     * @throws \Morningtrain\WP\View\Exceptions\MissingPackageException
+     * @throws \ReflectionException
+     */
+    public function render()
+    {
+        echo View::render($this->getSlug() . "::template",['block' => $this]);
     }
 
     /**
@@ -411,7 +434,7 @@ abstract class AbstractBlock
      *
      * @throws \Exception
      */
-    public static function registerBlockType(): ?\WP_Error
+    public function registerBlockType(): ?\WP_Error
     {
         if (!function_exists('acf_register_block_type')) {
             return new \WP_Error(
@@ -421,44 +444,40 @@ abstract class AbstractBlock
         }
 
         $args = [
-            'name' => static::getSlug(),
-            'title' => static::getTitle(),
-            'icon' => static::getIcon(),
+            'name' => $this->getSlug(),
+            'title' => $this->getTitle(),
+            'icon' => $this->getIcon(),
         ];
 
-        if (method_exists(get_called_class(), 'render')) {
-            $args['render_callback'] = array(get_called_class(), 'render');
-        } else {
-            $args['render_template'] = static::getTemplate();
-        }
+        $args['render_callback'] = [$this, 'render'];
 
         if (method_exists(get_called_class(), 'enqueueAssets')) {
-            $args['enqueue_assets'] = array(get_called_class(), 'enqueueAssets');
+            $args['enqueue_assets'] = [$this, 'enqueueAssets'];
         }
 
-        $description = static::getDescription();
+        $description = $this->getDescription();
         if (!empty($description)) {
             $args['description'] = $description;
         }
 
-        $category = static::getCategory();
+        $category = $this->getCategory();
         if (is_array($category)) {
             $args['category'] = $category['slug'];
         } elseif (is_string($category)) {
             $args['category'] = $category;
         }
 
-        $keywords = static::getKeywords();
+        $keywords = $this->getKeywords();
         if (!empty($keywords)) {
             $args['keywords'] = (array)$keywords;
         }
 
-        $supports = static::getSupports();
+        $supports = $this->getSupports();
         if (!empty($supports)) {
             $args['supports'] = (array)$supports;
         }
 
-        $styles = static::getStyles();
+        $styles = $this->getStyles();
         if (!empty($styles)) {
             $args['styles'] = (array)$styles;
             $args['supports']['defaultStylePicker'] = false;
