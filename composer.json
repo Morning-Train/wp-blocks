@@ -3,6 +3,7 @@
   "description": "A Gutenber Blocks package",
   "minimum-stability": "stable",
   "license": "proprietary",
+  "version": "v0.1.0",
   "authors": [
     {
       "name": "Morningtrain",
