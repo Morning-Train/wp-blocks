@@ -15,7 +15,15 @@ abstract class AbstractJSBlock extends \Morningtrain\WP\Core\Abstracts\AbstractM
     {
         parent::init();
 
-        $this->assets_file_contents = require($this->getAssetFile());
+        $assets_file = $this->getAssetFile();
+
+        if ($assets_file === null) {
+            // Block does not seem to have been built
+            // TODO: We might want to throw some kind of warning here
+            return;
+        }
+
+        $this->assets_file_contents = require($assets_file);
 
         if (did_action('init') > 0) {
             $this->register();
@@ -50,9 +58,10 @@ abstract class AbstractJSBlock extends \Morningtrain\WP\Core\Abstracts\AbstractM
         }
     }
 
-    public function getAssetFile(): string
+    public function getAssetFile(): ?string
     {
-        return $this->getBlockBuildDir() . "/{$this->getName()}.asset.php";
+        $file = $this->getBlockBuildDir() . "/{$this->getName()}.asset.php";
+        return file_exists($file) ? $file : null;
     }
 
 
