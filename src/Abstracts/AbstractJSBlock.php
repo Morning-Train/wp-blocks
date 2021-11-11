@@ -127,6 +127,10 @@ abstract class AbstractJSBlock extends \Morningtrain\WP\Core\Abstracts\AbstractM
             )
         );
 
+        if (method_exists($this, 'renderCallback')) {
+            $register_args['render_callback'] = [$this, 'renderCallback'];
+        }
+
         $lc_name = mb_strtolower($this->getName());
         $package_name = "morningtrain/{$lc_name}";
         \register_block_type($package_name, $register_args);
