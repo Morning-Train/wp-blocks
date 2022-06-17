@@ -10,9 +10,43 @@
       "email": "mh@morningtrain.dk"
     }
   ],
+  "repositories": {
+    "backuptrain.dk/9": {
+      "type": "composer",
+      "url": "https://backuptrain.dk/api/v4/group/9/-/packages/composer/packages.json"
+    }
+  },
   "autoload": {
     "psr-4": {
       "Morningtrain\\WP\\Blocks\\": "src/"
     }
-  }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Morningtrain\\WP\\Hooks\\Tests\\Unit\\": "tests/Unit",
+      "Morningtrain\\WP\\Hooks\\Tests\\Feature\\": "tests/Feature"
+    }
+  },
+  "require": {
+    "php": "^8.0",
+    "morningtrain/php-loader": "^0.3.0"
+  },
+  "require-dev": {
+    "pestphp/pest": "^1.21",
+    "brain/monkey": "~2.0.0"
+  },
+  "scripts": {
+    "test": "vendor/bin/pest",
+    "test-coverage": "vendor/bin/pest --coverage"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "gitlab-domains": [
+      "backuptrain.dk"
+    ]
+  },
+  "prefer-stable": true
 }
