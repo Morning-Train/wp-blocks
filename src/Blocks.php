@@ -9,7 +9,7 @@
         public static function loadDir(string|array $path)
         {
             Loader::create($path)
-                ->isA(Abstracts\AbstractBlock::class)
+                ->isA(Abstracts\AbstractBlock_OLD::class)
                 ->invoke();
         }
     }
