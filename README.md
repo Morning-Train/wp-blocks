@@ -5,6 +5,13 @@ A Morningtrain package for working with WordPress Gutenberg blocks more easily.
 ## Table of contents
 
 ```php
+use Morningtrain\WP\Blocks\Blocks;
+// Tell Blocks where the built/compiled files are located
+Blocks::setBuildDir(__DIR__ . "/public/build/blocks");
+Blocks::setBuildUrl(get_stylesheet_directory_uri() . "/public/build/blocks");
+```
+
+```php
 // Basic Block registration
 use Morningtrain\WP\Blocks\Blocks;
 Blocks::create('acme/block') // Now block name will be block and .js file should be "block.js"
