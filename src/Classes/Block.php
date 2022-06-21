@@ -4,152 +4,48 @@ namespace Morningtrain\WP\Blocks\Classes;
 
 class Block
 {
+    private BlockMeta $blockMeta;
 
-    protected string $name;
-    protected string $scriptHandle;
-    protected string $styleHandle;
-    protected string $editorStyleHandle;
-    protected array $scriptDependencies = [];
-    protected array $styleDependencies = [];
-    protected array $editorStyleDependencies = [];
-
-    protected string $buildDir;
-    protected string $buildUrl;
-
-    protected mixed $renderCallback = null; // Callable
-
-    protected array $assetsFile;
-    protected array $settings = [];
-
-    // $view ?
-
-    public function __construct(protected string $namespace)
+    public function __construct(protected string $dir)
     {
-        [$group, $name] = explode('/', $this->namespace);
-        $handle = str_replace('/', '-', $this->namespace);
-        $this->name($name)
-            ->scriptHandle($handle)
-            ->styleHandle('style-' . $handle)
-            ->editorStyleHandle($handle);
-    }
-
-    public function name(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function scriptHandle(string $handle): static
-    {
-        $this->scriptHandle = $handle;
-
-        return $this;
-    }
-
-    public function styleHandle(string $handle): static
-    {
-        $this->styleHandle = $handle;
-
-        return $this;
-    }
-
-    public function editorStyleHandle(string $handle): static
-    {
-        $this->editorStyleHandle = $handle;
-
-        return $this;
-    }
-
-    public function buildDir(string $path): static
-    {
-        $this->buildDir = $path;
-
-        return $this;
-    }
-
-    public function buildUrl(string $url): static
-    {
-        $this->buildUrl = $url;
-        $this->buildUrl = $url;
-
-        return $this;
+        if (file_exists(trailingslashit($dir) . "block.json")) {
+            $this->blockMeta = new BlockMeta(json_decode(file_get_contents(trailingslashit($dir) . "block.json"),
+                true));
+        }
     }
 
     public function scriptDependencies(string|array $deps): static
     {
-        $this->scriptDependencies = (array) $deps;
+        $this->blockMeta->scriptDependencies = (array) $deps;
 
         return $this;
     }
 
     public function styleDependencies(string|array $deps): static
     {
-        $this->styleDependencies = (array) $deps;
+        $this->blockMeta->styleDependencies = (array) $deps;
 
         return $this;
     }
 
     public function editorStyleDependencies(string|array $deps): static
     {
-        $this->editorStyleDependencies = (array) $deps;
+        $this->blockMeta->editorStyleDependencies = (array) $deps;
 
         return $this;
     }
 
     public function renderCallback(callable $callback): static
     {
-        $this->renderCallback = $callback;
+        $this->blockMeta->renderCallback = $callback;
 
         return $this;
     }
 
-    public function settings(array $settings): static
+    public function view(string $view): static
     {
-        $this->settings = $settings;
-
-        return $this;
-    }
-
-    protected function loadAssetsFile(): static
-    {
-        $this->assetsFile = require trailingslashit($this->buildDir) . "{$this->name}.asset.php";
-
-        return $this;
-    }
-
-    protected function registerScript(): static
-    {
-        \wp_register_script(
-            $this->scriptHandle,
-            trailingslashit($this->buildUrl) . "{$this->name}.js",
-            array_merge($this->scriptDependencies, $this->assetsFile['dependencies']),
-            $this->assetsFile['version']
-        );
-
-        return $this;
-    }
-
-    protected function registerStyle(): static
-    {
-        \wp_register_style(
-            $this->styleHandle,
-            trailingslashit($this->buildUrl) . "style-{$this->name}.css",
-            $this->styleDependencies,
-            $this->assetsFile['version']
-        );
-
-        return $this;
-    }
-
-    protected function registerEditorStyle(): static
-    {
-        \wp_register_style(
-            $this->editorStyleHandle,
-            trailingslashit($this->buildUrl) . "{$this->name}.css",
-            $this->editorStyleDependencies,
-            $this->assetsFile['version']
-        );
+        $this->blockMeta->view = $view;
+        $this->blockMeta->renderCallback = [$this->blockMeta, 'view'];
 
         return $this;
     }
@@ -162,21 +58,26 @@ class Block
             return false;
         }
 
-        $this->loadAssetsFile()
-            ->registerScript()
-            ->registerStyle()
-            ->registerEditorStyle();
+        if (! empty($this->blockMeta->editorStyleDependencies)) {
+            \add_action('enqueue_block_editor_assets', [$this->blockMeta, 'enqueueAdminDependencies']);
+        }
 
-        return \register_block_type($this->namespace,
-            array_merge(
-                [
-                    'editor_script' => $this->scriptHandle,
-                    'style' => $this->styleHandle,
-                    'editor_style' => $this->editorStyleHandle,
-                    //'render_callback' => $this->renderCallback,
-                ],
-                $this->settings
-            ),
-        );
+        if (! empty($this->blockMeta->styleDependencies) || ! empty($this->blockMeta->scriptDependencies)) {
+            \add_action('enqueue_block_assets', [$this->blockMeta, 'enqueueDependencies']);
+        }
+
+        return \register_block_type($this->dir, [
+            'render_callback' => $this->blockMeta->renderCallback,
+        ]);
+    }
+
+    public function _enqueueAdminDependencies()
+    {
+        $this->blockMeta->_enqueueAdminDependencies();
+    }
+
+    public function _enqueueDependencies()
+    {
+        $this->blockMeta->_enqueueDependencies();
     }
 }

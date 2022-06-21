@@ -4,37 +4,29 @@ namespace Morningtrain\WP\Blocks;
 
 use Morningtrain\PHPLoader\Loader;
 use Morningtrain\WP\Blocks\Classes\Block;
+use Morningtrain\WP\Blocks\Classes\Service;
 
 class Blocks
 {
-    private static ?string $buildDir = null;
-    private static ?string $buildUrl = null;
-
     public static function loadDir(string|array $path)
     {
-        Loader::create($path);
-    }
-
-    public static function create(string $nameSpace): Block
-    {
-        $block = new Block($nameSpace);
-        if (static::$buildDir !== null) {
-            $block->buildDir(static::$buildDir);
+        Service::init();
+        foreach ((array) $path as $p) {
+            if (! is_dir($p)) {
+                continue;
+            }
+            $iterator = new \DirectoryIterator($p);
+            foreach ($iterator as $fileInfo) {
+                if ($fileInfo->getType() !== 'dir' || $fileInfo->isDot()) {
+                    continue;
+                }
+                Service::registerBlockDirectory($fileInfo->getPathname());
+            }
         }
-        if (static::$buildUrl !== null) {
-            $block->buildUrl(static::$buildUrl);
-        }
-
-        return $block;
     }
 
-    public static function setBuildDir(string $path)
+    public static function create(string $dir): Block
     {
-        static::$buildDir = $path;
-    }
-
-    public static function setBuildUrl(string $url)
-    {
-        static::$buildUrl = $url;
+        return new Block($dir);
     }
 }
