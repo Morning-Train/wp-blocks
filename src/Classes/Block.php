@@ -70,14 +70,4 @@ class Block
             'render_callback' => $this->blockMeta->renderCallback,
         ]);
     }
-
-    public function _enqueueAdminDependencies()
-    {
-        $this->blockMeta->_enqueueAdminDependencies();
-    }
-
-    public function _enqueueDependencies()
-    {
-        $this->blockMeta->_enqueueDependencies();
-    }
 }
