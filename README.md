@@ -2,7 +2,55 @@
 
 A Morningtrain package for working with WordPress Gutenberg blocks more easily.
 
-## Table of contents
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Getting Started](#getting-started)
+    - [Installation](#installation)
+- [Dependencies](#dependencies)
+    - [morningtrain/php-loader](#morningtrainphp-loader)
+- [Usage](#usage)
+  -[Loading the block directory](#loading-the-block-directory)
+  -[Registering a block](#registering-a-block)
+- [Credits](#credits)
+- [Testing](#testing)
+- [License](#license)
+
+
+## Introduction
+
+This tool is made for organizing WordPress Gutenberg blocks!
+
+This tool lets you:
+
+- Load all blocks found in a directory
+- Register blocks using a fluid api
+- Render Blade views directly as render_callback for your block
+- Set script and stylesheet dependencies for your block
+
+## Getting Started
+
+To get started install the package as described below in [Installation](#installation).
+
+To use the tool have a look at [Usage](#usage)
+
+### Installation
+
+Install with composer
+
+```bash
+composer require morningtrain/wp-blocks
+```
+
+## Dependencies
+
+### morningtrain/php-loader
+
+[PHP Loader](https://github.com/Morning-Train/php-loader) is used to load and initialize all Hooks
+
+## Usage
+
+### Loading the block directory
 
 ```php
 use Morningtrain\WP\Blocks\Blocks;
@@ -10,6 +58,8 @@ use Morningtrain\WP\Blocks\Blocks;
 Blocks::setBuildDir(__DIR__ . "/public/build/blocks");
 Blocks::setBuildUrl(get_stylesheet_directory_uri() . "/public/build/blocks");
 ```
+
+### Registering a block
 
 ```php
 // Basic Block registration
@@ -37,3 +87,18 @@ Blocks::create('acme/block')
     ->renderCallback([MyClass::class,'renderBlock']) // A callback for server side rendering / dynamic blocks
     ->register(); // Register!!
 ```
+
+## Credits
+
+- [Mathias Munk](https://github.com/mrmoeg)
+- [All Contributors](../../contributors)
+
+## Testing
+
+```bash
+composer test
+```
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
