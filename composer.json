@@ -1,18 +1,48 @@
 {
-  "name": "morningtrain/wp-blocks",
-  "description": "A Gutenber Blocks package",
-  "minimum-stability": "stable",
-  "license": "proprietary",
-  "version": "v0.2.0",
-  "authors": [
-    {
-      "name": "Morningtrain",
-      "email": "mh@morningtrain.dk"
-    }
-  ],
-  "autoload": {
-    "psr-4": {
-      "Morningtrain\\WP\\Blocks\\": "src/"
-    }
-  }
+    "name": "morningtrain/wp-blocks",
+    "description": "A fluid api for registering Gutenberg blocks with View/blade support",
+    "keywords": [
+        "wordpress",
+        "morningtrain",
+        "gutenberg",
+        "blocks"
+    ],
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Morningtrain",
+            "email": "mh@morningtrain.dk"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Morningtrain\\WP\\Blocks\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Morningtrain\\WP\\Hooks\\Tests\\Unit\\": "tests/Unit",
+            "Morningtrain\\WP\\Hooks\\Tests\\Feature\\": "tests/Feature"
+        }
+    },
+    "require": {
+        "php": "^8.0",
+        "morningtrain/php-loader": "^0.3.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^1.21",
+        "brain/monkey": "~2.0.0"
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "prefer-stable": true
 }
