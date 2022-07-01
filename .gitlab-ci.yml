@@ -40,7 +40,6 @@ test:
     - if [[ -x "vendor/brianium/paratest/bin/paratest" ]]; then composer test -vv --parallel; fi
     - if [[ ! -x "vendor/brianium/paratest/bin/paratest" ]]; then composer test -vv; fi
     - if [[ -f "coverage/text-coverage.txt" ]]; then head -n10 coverage/text-coverage.txt; fi
-  #coverage: '/^\s*Lines:\s*\d+.\d+\%/'
   coverage: '/^\s*Lines:\s*\d+.\d+\%/'
   artifacts:
     reports:
