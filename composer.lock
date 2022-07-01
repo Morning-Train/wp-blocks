@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e3e0365072ecdc97c478747f72b4663",
+    "content-hash": "9b40a29b024b0f3107ad722550774336",
     "packages": [
         {
             "name": "morningtrain/php-loader",
-            "version": "0.3.0",
+            "version": "v0.3.2",
             "source": {
                 "type": "git",
-                "url": "https://backuptrain.dk/internal-projects/php-loader.git",
-                "reference": "a2911a8be8382681fd8ab66bc567c17071bcf74e"
+                "url": "https://github.com/Morning-Train/php-loader.git",
+                "reference": "acacc18c8503f205306e6846dc5c125a9d6d721d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://backuptrain.dk/api/v4/projects/1079/packages/composer/archives/morningtrain/php-loader.zip?sha=a2911a8be8382681fd8ab66bc567c17071bcf74e",
-                "reference": "a2911a8be8382681fd8ab66bc567c17071bcf74e",
+                "url": "https://api.github.com/repos/Morning-Train/php-loader/zipball/acacc18c8503f205306e6846dc5c125a9d6d721d",
+                "reference": "acacc18c8503f205306e6846dc5c125a9d6d721d",
                 "shasum": ""
             },
             "require": {
@@ -33,30 +33,26 @@
                     "Morningtrain\\PHPLoader\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Morningtrain\\PHPLoader\\Tests\\Unit\\": "tests/Unit",
-                    "Morningtrain\\PHPLoader\\Tests\\Feature\\": "tests/Feature"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "test-coverage": [
-                    "vendor/bin/pest --coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "proprietary"
+                "MIT"
             ],
             "authors": [
                 {
-                    "name": "Morningtrain - Mathias Højrup Munk",
+                    "name": "Mathias Munk",
                     "email": "mh@morningtrain.dk"
                 }
             ],
-            "description": "A class for loading PHP files and classes in a PSR-4 directory"
+            "description": "A class for loading PHP files and classes in a PSR-4 directory",
+            "keywords": [
+                "loader",
+                "morningtrain"
+            ],
+            "support": {
+                "issues": "https://github.com/Morning-Train/php-loader/issues",
+                "source": "https://github.com/Morning-Train/php-loader/tree/v0.3.2"
+            },
+            "time": "2022-07-01T08:38:23+00:00"
         },
         {
             "name": "symfony/finder",
