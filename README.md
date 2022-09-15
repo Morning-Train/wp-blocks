@@ -10,12 +10,13 @@ A Morningtrain package for working with WordPress Gutenberg blocks more easily.
 - [Dependencies](#dependencies)
     - [morningtrain/php-loader](#morningtrainphp-loader)
 - [Usage](#usage)
-  -[Loading the block directory](#loading-the-block-directory)
-  -[Registering a block](#registering-a-block)
+    - [Loading the block directory](#loading-the-block-directory)
+    - [Registering a block](#registering-a-block)
+    - [Registering a block pattern](#registering-a-block-pattern)
+      - [Specifying the pattern itself](#specifying-the-pattern-itself)
 - [Credits](#credits)
 - [Testing](#testing)
 - [License](#license)
-
 
 ## Introduction
 
@@ -86,6 +87,57 @@ Blocks::create('acme/block')
     ])
     ->renderCallback([MyClass::class,'renderBlock']) // A callback for server side rendering / dynamic blocks
     ->register(); // Register!!
+```
+
+### Registering a block pattern
+
+You can easily register a new [block pattern](https://developer.wordpress.org/reference/functions/register_block_pattern/) into WordPress using the `Blocks::pattern` method.
+
+This example will register a block pattern into the "morningtrain" namespace called "product-page".
+When no title is supplied the name will be parsed automatically.
+When no template file to use is supplied Pattern will look in the _patterns directory in the blocks main dir for a .html file matching the pattern name.
+
+In this example the title would be "Product Page" and the template file used would be blocks/_patterns/product-page.html.
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page');
+```
+
+Here is a more fleshed-out example:
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
+    ->title(__('Product Page','morningtrain'))
+    ->description(__('Basic template for Product Pages','morningtrain'))
+    ->categories(['featured','morningtrain','products'])
+    ->keywords(['morningtrain','product','fullpage'])
+    ->usePattern('product-page.html');
+```
+
+**Note:** All public methods on the Pattern class have usefull descriptions and the properties match the ones seen in the codex, which is also referenced on the class itself
+
+#### Specifying the pattern itself
+
+By pattern file in the _patterns dir:
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
+    ->usePattern('product-page.html');
+```
+
+By template part file in the /parts/ dir:
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
+    ->useTemplatePart('product-page.html');
+```
+
+By template file in any dir:
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
+    ->useFile(__DIR__ . '/product-page.html');
+```
+
+As a string:
+```php
+\Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
+    ->useString('<div>Products ... </div>');
 ```
 
 ## Credits
