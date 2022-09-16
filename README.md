@@ -13,6 +13,7 @@ A Morningtrain package for working with WordPress Gutenberg blocks more easily.
     - [Loading the block directory](#loading-the-block-directory)
     - [Registering a block](#registering-a-block)
     - [Registering a block pattern](#registering-a-block-pattern)
+      - [Loading patterns from a custom directory](#loading-patterns-from-a-custom-directory)
       - [Specifying the pattern itself](#specifying-the-pattern-itself)
 - [Credits](#credits)
 - [Testing](#testing)
@@ -28,6 +29,7 @@ This tool lets you:
 - Register blocks using a fluid api
 - Render Blade views directly as render_callback for your block
 - Set script and stylesheet dependencies for your block
+- Register block patterns from template HTML files using a fluid api
 
 ## Getting Started
 
@@ -56,8 +58,7 @@ composer require morningtrain/wp-blocks
 ```php
 use Morningtrain\WP\Blocks\Blocks;
 // Tell Blocks where the built/compiled files are located
-Blocks::setBuildDir(__DIR__ . "/public/build/blocks");
-Blocks::setBuildUrl(get_stylesheet_directory_uri() . "/public/build/blocks");
+Blocks::setup(__DIR__ . "/resources/blocks",__DIR__ . "/public/build/blocks");
 ```
 
 ### Registering a block
@@ -91,18 +92,23 @@ Blocks::create('acme/block')
 
 ### Registering a block pattern
 
-You can easily register a new [block pattern](https://developer.wordpress.org/reference/functions/register_block_pattern/) into WordPress using the `Blocks::pattern` method.
+You can easily register a
+new [block pattern](https://developer.wordpress.org/reference/functions/register_block_pattern/) into WordPress using
+the `Blocks::pattern` method.
 
-This example will register a block pattern into the "morningtrain" namespace called "product-page".
-When no title is supplied the name will be parsed automatically.
-When no template file to use is supplied Pattern will look in the _patterns directory in the blocks main dir for a .html file matching the pattern name.
+This example will register a block pattern into the "morningtrain" namespace called "product-page". When no title is
+supplied the name will be parsed automatically. When no template file to use is supplied Pattern will look in the _
+patterns directory in the blocks main dir for a .html file matching the pattern name.
 
-In this example the title would be "Product Page" and the template file used would be blocks/_patterns/product-page.html.
+In this example the title would be "Product Page" and the template file used would be blocks/_
+patterns/product-page.html.
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page');
 ```
 
 Here is a more fleshed-out example:
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
     ->title(__('Product Page','morningtrain'))
@@ -112,29 +118,44 @@ Here is a more fleshed-out example:
     ->usePattern('product-page.html');
 ```
 
-**Note:** All public methods on the Pattern class have usefull descriptions and the properties match the ones seen in the codex, which is also referenced on the class itself
+**Note:** All public methods on the Pattern class have usefull descriptions and the properties match the ones seen in
+the codex, which is also referenced on the class itself
+
+#### Loading patterns from a custom directory
+
+As a default the package will look for a `/_patterns/` directory in the blocks dir.
+
+If your patterns are located elsewhere you can define it like so:
+
+```php
+\Morningtrain\WP\Blocks\Blocks::setPatternDirectory(__DIR__ . '/my-patterns');
+```
 
 #### Specifying the pattern itself
 
 By pattern file in the _patterns dir:
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
     ->usePattern('product-page.html');
 ```
 
 By template part file in the /parts/ dir:
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
     ->useTemplatePart('product-page.html');
 ```
 
 By template file in any dir:
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
     ->useFile(__DIR__ . '/product-page.html');
 ```
 
 As a string:
+
 ```php
 \Morningtrain\WP\Blocks\Blocks::pattern('morningtrain','product-page')
     ->useString('<div>Products ... </div>');
