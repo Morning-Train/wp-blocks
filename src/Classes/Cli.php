@@ -9,8 +9,7 @@ class Cli
     public function deleteCacheFiles()
     {
         $deletedCacheFiles = Blocks::getBlockLoader()->deleteCacheFiles();
-        \ray($deletedCacheFiles);
         $num = count($deletedCacheFiles);
-        \WP_CLI::success("Deleted $num files");
+        \WP_CLI::success("Deleted $num file(s)");
     }
 }
