@@ -3,6 +3,7 @@
 namespace Morningtrain\WP\Blocks;
 
 use Morningtrain\WP\Blocks\Classes\BlockLoader;
+use Morningtrain\WP\Blocks\Classes\Cli;
 use Morningtrain\WP\Blocks\Classes\Service;
 
 class Blocks
@@ -50,6 +51,15 @@ class Blocks
         static::$blockLoader->init();
         static::$service->init();
 
+        if (class_exists("\WP_CLI")) {
+            \WP_CLI::add_command('wp-blocks', new Cli());
+        }
+
         static::$isInitialized = true;
+    }
+
+    public static function getBlockLoader(): BlockLoader
+    {
+        return static::$blockLoader;
     }
 }
