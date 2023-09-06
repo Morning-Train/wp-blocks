@@ -2,64 +2,30 @@
 
 namespace Morningtrain\WP\Blocks\Classes;
 
+use Morningtrain\WP\View\View;
+
 class Service
 {
-    protected static array $buildDirectories = [];
-    protected static ?string $blockDirectory = null;
-    protected static ?string $patternDirectory = null;
-    protected static bool $isInitialized = false;
-
-    public static function init(string $blocksPath)
+    public function init(): void
     {
-        static::$blockDirectory = trailingslashit($blocksPath);
-        static::$patternDirectory = static::$blockDirectory . '_patterns/';
-
-        \add_action('init', [static::class, 'registerBlocks']);
+        \add_filter('block_type_metadata_settings', [$this, 'allowViewRenderInBlockMeta'], 99, 2);
     }
 
-    public static function getBlocksDirectory(): ?string
+    public function allowViewRenderInBlockMeta($settings, $metadata)
     {
-        return static::$blockDirectory;
-    }
-
-    public static function setPatternDirectory(string $path)
-    {
-        static::$patternDirectory = $path;
-    }
-
-    public static function getPatternDirectory(): ?string
-    {
-        if (! is_dir(static::$patternDirectory)) {
-            mkdir(static::$patternDirectory);
+        if (! isset($metadata['renderView'])) {
+            return $settings;
         }
 
-        return static::$patternDirectory;
-    }
+        $settings['render_callback'] = static function ($attributes, $content, $block) use ($metadata) {
+            return View::render($metadata['renderView'], [
+                'attributes' => $attributes,
+                'content' => $content,
+                'block' => $block,
+                'blockProps' => \get_block_wrapper_attributes(),
+            ]);
+        };
 
-    public static function getPartsDirectory(): string
-    {
-        return \trailingslashit(\get_template_directory()) . 'parts/';
+        return $settings;
     }
-
-    public static function addBuildDirectory(string $dir)
-    {
-        static::$buildDirectories[$dir] = $dir;
-    }
-
-    public static function registerBlocks()
-    {
-        foreach (static::$buildDirectories as $blockDirectory) {
-            static::registerBlock($blockDirectory);
-        }
-    }
-
-    public static function registerBlock(string $dir)
-    {
-        if (file_exists($dir . "/block.php")) {
-            require $dir . "/block.php";
-        } elseif (file_exists($dir . "/block.json")) {
-            \register_block_type($dir . "/block.json");
-        }
-    }
-
 }

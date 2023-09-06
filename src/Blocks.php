@@ -2,53 +2,54 @@
 
 namespace Morningtrain\WP\Blocks;
 
-use Morningtrain\PHPLoader\Loader;
-use Morningtrain\WP\Blocks\Classes\Block;
-use Morningtrain\WP\Blocks\Classes\Pattern;
+use Morningtrain\WP\Blocks\Classes\BlockLoader;
 use Morningtrain\WP\Blocks\Classes\Service;
 
 class Blocks
 {
-    public static function setup(string $blocksPath, string|array $buildPath)
+    protected static BlockLoader $blockLoader;
+    protected static Service $service;
+    protected static bool $isInitialized = false;
+
+    /**
+     * Register a directory containing blocks
+     *
+     * @param  string  $path
+     * @throws \Exception Throws is $path is not a directory
+     */
+    public static function setup(string $path): void
     {
-        Service::init($blocksPath);
-        foreach ((array) $buildPath as $p) {
-            if (! is_dir($p)) {
-                continue;
-            }
-            $iterator = new \DirectoryIterator($p);
-            foreach ($iterator as $fileInfo) {
-                if ($fileInfo->getType() !== 'dir' || $fileInfo->isDot()) {
-                    continue;
-                }
-                Service::addBuildDirectory($fileInfo->getPathname());
-            }
+        if (! isset(static::$service)) {
+            static::$service = new Service();
+        }
+
+        static::registerBlockDirectory($path);
+
+        if (! static::$isInitialized) {
+            static::init();
         }
     }
 
-    public static function setPatternDirectory(string $path)
-    {
-        Service::setPatternDirectory($path);
-    }
-
-    public static function create(string $dir): Block
-    {
-        return new Block($dir);
-    }
-
     /**
-     * Register a new block pattern
+     * Register a directory containing blocks
      *
-     * @param  string  $namespace
-     * @param  string  $name
-     *
-     * @return Pattern
-     *
-     * @see https://developer.wordpress.org/reference/functions/register_block_pattern/
+     * @param  string  $path
+     * @throws \Exception Throws is $path is not a directory
      */
-    public static function pattern(string $namespace, string $name): Pattern
+    public static function registerBlockDirectory(string $path): void
     {
-        return new Pattern($namespace, $name);
+        if (! isset(static::$blockLoader)) {
+            static::$blockLoader = new BlockLoader();
+        }
+
+        static::$blockLoader->registerBlockPath($path);
     }
 
+    protected static function init(): void
+    {
+        static::$blockLoader->init();
+        static::$service->init();
+
+        static::$isInitialized = true;
+    }
 }

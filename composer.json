@@ -28,7 +28,8 @@
     },
     "require": {
         "php": "^8.0",
-        "morningtrain/php-loader": "^0.3.2"
+        "morningtrain/php-loader": "^0.3.2",
+        "morningtrain/wp-view": "v0.4.*"
     },
     "require-dev": {
         "pestphp/pest": "^1.21",
