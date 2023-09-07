@@ -83,7 +83,10 @@ class BlockLoader
         $blocks = [];
         $metaFiles = $this->locateBlocksInPath($path);
         foreach ($metaFiles as $metaFile) {
-            $blocks[$metaFile] = $this->locateBlockDependencies($metaFile);
+            $blocks[] = [
+                'metaFile' => $metaFile,
+                'phpFiles' => $this->locateBlockDependencies($metaFile),
+            ];
         }
 
         if (\wp_get_environment_type() === 'production') {
@@ -98,7 +101,7 @@ class BlockLoader
      *
      * @param  string  $path
      *
-     * @return array An array containing the full paths of block.json files
+     * @return string[] An array containing the full paths of block.json files
      */
     protected function locateBlocksInPath(string $path): array
     {
@@ -122,7 +125,7 @@ class BlockLoader
      *
      * @param  string  $blockMetaFile
      *
-     * @return array An array of full .php file paths
+     * @return string[] An array of full .php file paths
      */
     protected function locateBlockDependencies(string $blockMetaFile): array
     {
@@ -141,44 +144,43 @@ class BlockLoader
     /**
      * Registers blocks and loads their dependencies
      *
-     * @param  array{metaFile: array{dependency: string}}  $blocks  An array of blocks and their .php file dependencies
+     * @param  array{ array{ metaFile: string, phpFiles: string[] } }  $blocks  An array of blocks and their .php file dependencies
      *
      * @return void
      */
     protected function loadBlocks(array $blocks): void
     {
-        foreach ($blocks as $metaFile => $dependencies) {
-            $this->loadBlock($metaFile, $dependencies);
+        foreach ($blocks as $block) {
+            $this->loadBlock($block);
         }
     }
 
     /**
-     * Register a single block by its meta file and load its dependencies
+     * Register a single block
      *
-     * @param  string  $blockMetaFile
-     * @param  array  $dependencies  .php files to require
+     * @param  array{ metaFile: string, phpFiles: string[] }  $block
      *
      * @return void
      */
-    protected function loadBlock(string $blockMetaFile, array $dependencies = []): void
+    protected function loadBlock(array $block): void
     {
-        if (! empty($dependencies)) {
-            foreach ($dependencies as $dependency) {
-                require_once $dependency;
+        if (! empty($block['phpFiles'])) {
+            foreach ($block['phpFiles'] as $phpFile) {
+                require_once $phpFile;
             }
         }
-        \register_block_type($blockMetaFile);
+        \register_block_type($block['metaFile']);
     }
 
     /**
      * Creates or updates a cache file with all relevant block data
      *
-     * @param $cacheFile
-     * @param $blocksData
+     * @param  string  $cacheFile
+     * @param  array{ array{ metaFile: string, phpFiles: string[] }  $blocksData
      *
      * @return void
      */
-    protected function updateBlocksPathCacheFile($cacheFile, $blocksData): void
+    protected function updateBlocksPathCacheFile(string $cacheFile, array $blocksData): void
     {
         \file_put_contents($cacheFile, "<?php return " . var_export($blocksData, true) . ";");
     }
@@ -186,11 +188,11 @@ class BlockLoader
     /**
      * Load blocks defined in a cache file
      *
-     * @param $cacheFile
+     * @param  string  $cacheFile
      *
      * @return void
      */
-    protected function loadBlocksPathCacheFile($cacheFile): void
+    protected function loadBlocksPathCacheFile(string $cacheFile): void
     {
         $this->loadBlocks(require $cacheFile);
     }
@@ -198,7 +200,7 @@ class BlockLoader
     /**
      * Delete cache files in registered paths
      *
-     * @return array
+     * @return string[]
      */
     public function deleteCacheFiles(): array
     {
