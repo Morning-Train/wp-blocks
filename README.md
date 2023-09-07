@@ -58,7 +58,7 @@ Note the custom schema url!
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/Morning-Train/wp-blocks/master/src/schemas/block.json",
+    "$schema": "https://wp.cdn.mtra.in/default/schemas/block.json",
     "apiVersion": 3,
     "name": "foo/bar",
     "version": "0.1.0",

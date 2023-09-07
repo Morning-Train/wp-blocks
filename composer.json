@@ -1,6 +1,6 @@
 {
     "name": "morningtrain/wp-blocks",
-    "description": "A fluid api for registering Gutenberg blocks with View/blade support",
+    "description": "A package for loading WordPress blocks with support for Blade templates",
     "keywords": [
         "wordpress",
         "morningtrain",
@@ -22,14 +22,12 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Morningtrain\\WP\\Hooks\\Tests\\Unit\\": "tests/Unit",
-            "Morningtrain\\WP\\Hooks\\Tests\\Feature\\": "tests/Feature"
+            "Morningtrain\\WP\\Hooks\\Tests\\Unit\\": "tests/Unit"
         }
     },
     "require": {
         "php": "^8.0",
-        "morningtrain/php-loader": "^0.3.2",
-        "morningtrain/wp-view": "v0.4.*"
+        "morningtrain/php-loader": "^0.3.2"
     },
     "require-dev": {
         "pestphp/pest": "^1.21",
@@ -38,6 +36,9 @@
     "scripts": {
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage"
+    },
+    "suggest": {
+        "morningtrain/wp-view": "Allows rendering Blade Views as block templates"
     },
     "config": {
         "sort-packages": true,

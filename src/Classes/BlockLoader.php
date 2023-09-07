@@ -75,7 +75,7 @@ class BlockLoader
     {
         $cacheFile = $path . "/" . $this->cacheFilename;
         if (\wp_get_environment_type() === 'production' && file_exists($cacheFile)) {
-            $this->loadBlocksPathCacheFile($cacheFile);
+            $this->loadBlocksFromCacheFile($cacheFile);
 
             return;
         }
@@ -90,7 +90,7 @@ class BlockLoader
         }
 
         if (\wp_get_environment_type() === 'production') {
-            $this->updateBlocksPathCacheFile($cacheFile, $blocks);
+            $this->updateBlocksCacheFile($cacheFile, $blocks);
         }
 
         $this->loadBlocks($blocks);
@@ -169,6 +169,7 @@ class BlockLoader
                 require_once $phpFile;
             }
         }
+
         \register_block_type($block['metaFile']);
     }
 
@@ -180,7 +181,7 @@ class BlockLoader
      *
      * @return void
      */
-    protected function updateBlocksPathCacheFile(string $cacheFile, array $blocksData): void
+    protected function updateBlocksCacheFile(string $cacheFile, array $blocksData): void
     {
         \file_put_contents($cacheFile, "<?php return " . var_export($blocksData, true) . ";");
     }
@@ -192,7 +193,7 @@ class BlockLoader
      *
      * @return void
      */
-    protected function loadBlocksPathCacheFile(string $cacheFile): void
+    protected function loadBlocksFromCacheFile(string $cacheFile): void
     {
         $this->loadBlocks(require $cacheFile);
     }

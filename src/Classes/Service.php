@@ -19,12 +19,12 @@ class Service
     /**
      * Handle custom block meta property "renderView"
      *
-     * @param $settings
-     * @param $metadata
+     * @param  array  $settings
+     * @param  array  $metadata
      * @return array
      * @see https://developer.wordpress.org/reference/hooks/block_type_metadata_settings/
      */
-    public function allowViewRenderInBlockMeta($settings, $metadata): array
+    public function allowViewRenderInBlockMeta(array $settings, array $metadata): array
     {
         if (! class_exists("\Morningtrain\WP\View\View")) {
             return $settings;
