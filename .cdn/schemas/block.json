@@ -1,0 +1,13 @@
+{
+    "allOf": [
+        {
+            "$ref": "https://schemas.wp.org/trunk/block.json"
+        }
+    ],
+    "properties": {
+        "renderView": {
+            "type": "string",
+            "description": "Blade template file loaded on the server when rendering a block."
+        }
+    }
+}
