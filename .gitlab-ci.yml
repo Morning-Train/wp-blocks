@@ -21,7 +21,8 @@ publish:
 
 
 include:
-  - remote: https://devops.mtra.in/tpl/v3/base/php.yml
+  - remote: https://devops.mtra.in/tpl/v6/base/php.yml
+  - remote: https://devops.mtra.in/tpl/v6/cdn/s3-upload.yml
 
 variables:
   PHP_VERSION: '8.0'
@@ -53,3 +54,8 @@ test:
       - vendor/
     policy: pull
 
+upload-cdn:
+  extends: .cdn-s3-upload
+  rules:
+    - exists:
+        - ".cdn/*"
