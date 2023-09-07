@@ -54,9 +54,11 @@ Blocks::registerBlockDirectory(__DIR__ . "/public/build/blocks");
 
 To serverside render a block using a Blade View set the custom `renderView` property.
 
+Note the custom schema url!
+
 ```json
 {
-    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "$schema": "https://raw.githubusercontent.com/Morning-Train/wp-blocks/master/src/schemas/block.json",
     "apiVersion": 3,
     "name": "foo/bar",
     "version": "0.1.0",
