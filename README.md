@@ -2,22 +2,8 @@
 
 A Morningtrain package for working with WordPress blocks more easily.
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Getting Started](#getting-started)
-    - [Installation](#installation)
-- [Dependencies](#dependencies)
-    - [morningtrain/php-loader](#morningtrainphp-loader)
-- [Usage](#usage)
-    - [Loading the block directory](#loading-the-block-directory)
-    - [Registering a block](#registering-a-block)
-    - [Registering a block pattern](#registering-a-block-pattern)
-        - [Loading patterns from a custom directory](#loading-patterns-from-a-custom-directory)
-        - [Specifying the pattern itself](#specifying-the-pattern-itself)
-- [Credits](#credits)
-- [Testing](#testing)
-- [License](#license)
+## 📋 Table of Contents
+[[_TOC_]]
 
 ## Introduction
 
