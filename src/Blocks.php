@@ -46,6 +46,11 @@ class Blocks
         static::$blockLoader->registerBlockPath($path);
     }
 
+    /**
+     * Initialize Service
+     *
+     * @return void
+     */
     protected static function init(): void
     {
         static::$blockLoader->init();
@@ -58,6 +63,11 @@ class Blocks
         static::$isInitialized = true;
     }
 
+    /**
+     * Get access to the active Block Loader
+     *
+     * @return BlockLoader
+     */
     public static function getBlockLoader(): BlockLoader
     {
         return static::$blockLoader;

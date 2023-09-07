@@ -6,13 +6,30 @@ use Morningtrain\WP\View\View;
 
 class Service
 {
+    /**
+     * Initialize class
+     *
+     * @return void
+     */
     public function init(): void
     {
         \add_filter('block_type_metadata_settings', [$this, 'allowViewRenderInBlockMeta'], 99, 2);
     }
 
-    public function allowViewRenderInBlockMeta($settings, $metadata)
+    /**
+     * Handle custom block meta property "renderView"
+     *
+     * @param $settings
+     * @param $metadata
+     * @return array
+     * @see https://developer.wordpress.org/reference/hooks/block_type_metadata_settings/
+     */
+    public function allowViewRenderInBlockMeta($settings, $metadata): array
     {
+        if (! class_exists("\Morningtrain\WP\View\View")) {
+            return $settings;
+        }
+
         if (! isset($metadata['renderView'])) {
             return $settings;
         }

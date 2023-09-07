@@ -6,7 +6,12 @@ use Morningtrain\WP\Blocks\Blocks;
 
 class Cli
 {
-    public function deleteCacheFiles()
+    /**
+     * Delete cache files
+     *
+     * @return void
+     */
+    public function deleteCacheFiles(): void
     {
         $deletedCacheFiles = Blocks::getBlockLoader()->deleteCacheFiles();
         $num = count($deletedCacheFiles);
