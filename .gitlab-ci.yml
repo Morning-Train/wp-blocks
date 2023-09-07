@@ -8,4 +8,4 @@ upload-cdn:
   extends: .cdn-s3-upload
   rules:
     - exists:
-        - ".cdn/*"
+        - ".cdn/schemas/*"
