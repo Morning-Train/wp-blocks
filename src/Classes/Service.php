@@ -2,64 +2,47 @@
 
 namespace Morningtrain\WP\Blocks\Classes;
 
+use Morningtrain\WP\View\View;
+
 class Service
 {
-    protected static array $buildDirectories = [];
-    protected static ?string $blockDirectory = null;
-    protected static ?string $patternDirectory = null;
-    protected static bool $isInitialized = false;
-
-    public static function init(string $blocksPath)
+    /**
+     * Initialize class
+     *
+     * @return void
+     */
+    public function init(): void
     {
-        static::$blockDirectory = trailingslashit($blocksPath);
-        static::$patternDirectory = static::$blockDirectory . '_patterns/';
-
-        \add_action('init', [static::class, 'registerBlocks']);
+        \add_filter('block_type_metadata_settings', [$this, 'allowViewRenderInBlockMeta'], 99, 2);
     }
 
-    public static function getBlocksDirectory(): ?string
+    /**
+     * Handle custom block meta property "renderView"
+     *
+     * @param $settings
+     * @param $metadata
+     * @return array
+     * @see https://developer.wordpress.org/reference/hooks/block_type_metadata_settings/
+     */
+    public function allowViewRenderInBlockMeta($settings, $metadata): array
     {
-        return static::$blockDirectory;
-    }
-
-    public static function setPatternDirectory(string $path)
-    {
-        static::$patternDirectory = $path;
-    }
-
-    public static function getPatternDirectory(): ?string
-    {
-        if (! is_dir(static::$patternDirectory)) {
-            mkdir(static::$patternDirectory);
+        if (! class_exists("\Morningtrain\WP\View\View")) {
+            return $settings;
         }
 
-        return static::$patternDirectory;
-    }
-
-    public static function getPartsDirectory(): string
-    {
-        return \trailingslashit(\get_template_directory()) . 'parts/';
-    }
-
-    public static function addBuildDirectory(string $dir)
-    {
-        static::$buildDirectories[$dir] = $dir;
-    }
-
-    public static function registerBlocks()
-    {
-        foreach (static::$buildDirectories as $blockDirectory) {
-            static::registerBlock($blockDirectory);
+        if (! isset($metadata['renderView'])) {
+            return $settings;
         }
-    }
 
-    public static function registerBlock(string $dir)
-    {
-        if (file_exists($dir . "/block.php")) {
-            require $dir . "/block.php";
-        } elseif (file_exists($dir . "/block.json")) {
-            \register_block_type($dir . "/block.json");
-        }
-    }
+        $settings['render_callback'] = static function ($attributes, $content, $block) use ($metadata) {
+            return View::render($metadata['renderView'], [
+                'attributes' => $attributes,
+                'content' => $content,
+                'block' => $block,
+                'blockProps' => \get_block_wrapper_attributes(),
+            ]);
+        };
 
+        return $settings;
+    }
 }
