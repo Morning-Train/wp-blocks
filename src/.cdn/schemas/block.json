@@ -1,7 +1,7 @@
 {
     "allOf": [
         {
-            "$ref": "https://raw.githubusercontent.com/WordPress/gutenberg/trunk/schemas/json/block.json"
+            "$ref": "https://schemas.wp.org/trunk/block.json"
         }
     ],
     "properties": {

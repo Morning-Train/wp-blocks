@@ -2,53 +2,74 @@
 
 namespace Morningtrain\WP\Blocks;
 
-use Morningtrain\PHPLoader\Loader;
-use Morningtrain\WP\Blocks\Classes\Block;
-use Morningtrain\WP\Blocks\Classes\Pattern;
+use Morningtrain\WP\Blocks\Classes\BlockLoader;
+use Morningtrain\WP\Blocks\Classes\Cli;
 use Morningtrain\WP\Blocks\Classes\Service;
 
 class Blocks
 {
-    public static function setup(string $blocksPath, string|array $buildPath)
+    protected static BlockLoader $blockLoader;
+    protected static Service $service;
+    protected static bool $isInitialized = false;
+
+    /**
+     * Register a directory containing blocks
+     *
+     * @param  string  $path
+     * @throws \Exception Throws is $path is not a directory
+     */
+    public static function setup(string $path): void
     {
-        Service::init($blocksPath);
-        foreach ((array) $buildPath as $p) {
-            if (! is_dir($p)) {
-                continue;
-            }
-            $iterator = new \DirectoryIterator($p);
-            foreach ($iterator as $fileInfo) {
-                if ($fileInfo->getType() !== 'dir' || $fileInfo->isDot()) {
-                    continue;
-                }
-                Service::addBuildDirectory($fileInfo->getPathname());
-            }
+        if (! isset(static::$service)) {
+            static::$service = new Service();
+        }
+
+        static::registerBlockDirectory($path);
+
+        if (! static::$isInitialized) {
+            static::init();
         }
     }
 
-    public static function setPatternDirectory(string $path)
+    /**
+     * Register a directory containing blocks
+     *
+     * @param  string  $path
+     * @throws \Exception Throws is $path is not a directory
+     */
+    public static function registerBlockDirectory(string $path): void
     {
-        Service::setPatternDirectory($path);
-    }
+        if (! isset(static::$blockLoader)) {
+            static::$blockLoader = new BlockLoader();
+        }
 
-    public static function create(string $dir): Block
-    {
-        return new Block($dir);
+        static::$blockLoader->registerBlockPath($path);
     }
 
     /**
-     * Register a new block pattern
+     * Initialize Service
      *
-     * @param  string  $namespace
-     * @param  string  $name
-     *
-     * @return Pattern
-     *
-     * @see https://developer.wordpress.org/reference/functions/register_block_pattern/
+     * @return void
      */
-    public static function pattern(string $namespace, string $name): Pattern
+    protected static function init(): void
     {
-        return new Pattern($namespace, $name);
+        static::$blockLoader->init();
+        static::$service->init();
+
+        if (class_exists("\WP_CLI")) {
+            \WP_CLI::add_command('wp-blocks', new Cli());
+        }
+
+        static::$isInitialized = true;
     }
 
+    /**
+     * Get access to the active Block Loader
+     *
+     * @return BlockLoader
+     */
+    public static function getBlockLoader(): BlockLoader
+    {
+        return static::$blockLoader;
+    }
 }
