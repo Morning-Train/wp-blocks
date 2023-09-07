@@ -1,0 +1,13 @@
+{
+    "allOf": [
+        {
+            "$ref": "https://raw.githubusercontent.com/WordPress/gutenberg/trunk/schemas/json/block.json"
+        }
+    ],
+    "properties": {
+        "renderView": {
+            "type": "string",
+            "description": "Blade template file loaded on the server when rendering a block."
+        }
+    }
+}
