@@ -3,6 +3,7 @@
 A Morningtrain package for working with WordPress blocks more easily.
 
 ## 📋 Table of Contents
+
 [[_TOC_]]
 
 ## Introduction
@@ -54,6 +55,10 @@ Blocks::registerBlockDirectory(__DIR__ . "/public/build/blocks");
 
 To serverside render a block using a Blade View set the custom `renderView` property.
 
+You can also have custom PHP code dependency. By declaring `phpScript` the given script will be loaded alongside the
+registration of your block.
+This is especially useful when needing a View Composer.
+
 Note the custom schema url!
 
 ```json
@@ -67,7 +72,13 @@ Note the custom schema url!
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
     "style": "file:./style-index.css",
-    "renderView": "my-view"
+    "renderView": "my-view",
+    "phpScript": "file:./script.php",
+    "viewPhpScript": [
+        "file:./view-script.php",
+        "file:./view-script2.php"
+    ],
+    "editorPhpScript": "file:./editor-script.php"
 }
 ```
 
@@ -91,6 +102,7 @@ If your environment is `production` then a cache containing all block files and 
 used so that the server doesn't have to look for them on every request.
 
 To clear this cache you can use the CLI command:
+
 ```sh
 wp wp-blocks deleteCacheFiles
 ```

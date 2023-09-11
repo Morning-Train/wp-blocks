@@ -9,6 +9,7 @@ class BlockLoader
 {
     protected string $cacheFilename = '_cache.php';
     protected array $blockPaths = [];
+    protected array $fileDependencyProperties = ['phpScript', 'viewPhpScript', 'editorPhpScript'];
 
     /**
      * Look for block.json files within path and register them as blocks.
@@ -83,10 +84,7 @@ class BlockLoader
         $blocks = [];
         $metaFiles = $this->locateBlocksInPath($path);
         foreach ($metaFiles as $metaFile) {
-            $blocks[] = [
-                'metaFile' => $metaFile,
-                'phpFiles' => $this->locateBlockDependencies($metaFile),
-            ];
+            $blocks[] = $this->resolveDataByMetaFile($metaFile);
         }
 
         if (\wp_get_environment_type() === 'production') {
@@ -120,22 +118,47 @@ class BlockLoader
     }
 
     /**
-     * Finds all sibling .php files
-     * Ignores files matching *.asset.php
+     * Resolve necessary block data
      *
-     * @param  string  $blockMetaFile
-     *
-     * @return string[] An array of full .php file paths
+     * @param  string  $metaFile
+     * @return string[] The data to cache
      */
-    protected function locateBlockDependencies(string $blockMetaFile): array
+    protected function resolveDataByMetaFile(string $metaFile): array
     {
-        $dir = dirname($blockMetaFile);
-        $dependencies = [];
+        $data = [
+            'metaFile' => $metaFile,
+        ];
+        $metaData = \wp_json_file_decode($metaFile, ['associative' => true]);
 
-        $finder = new Finder();
-        $finder->files()->name('*.php')->notName('*.asset.php')->in($dir)->depth('== 0');
-        foreach ($finder as $file) {
-            $dependencies[] = $file->getRealPath();
+        foreach ($this->fileDependencyProperties as $fileDependencyProperty) {
+            $deps = $this->resolveFileDependencyProperty($fileDependencyProperty, $metaData);
+            if (! empty($deps)) {
+                $data[$fileDependencyProperty] = $deps;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Resolve a list of file dependencies in the block.json file as a list of relative paths
+     *
+     * @param  string  $property  The property in block.json
+     * @param  array  $metaData  The full metadata object
+     * @return array A list of relative paths
+     */
+    protected function resolveFileDependencyProperty(string $property, array $metaData): array
+    {
+        if (empty($metaData[$property])) {
+            return [];
+        }
+
+        $dependencies = [];
+        foreach ((array) $metaData[$property] as $dependency) {
+            $path = \remove_block_asset_path_prefix($dependency);
+            if ($dependency !== $path) {
+                $dependencies[] = $path;
+            }
         }
 
         return $dependencies;
@@ -156,7 +179,7 @@ class BlockLoader
     }
 
     /**
-     * Register a single block
+     * Register a single block and load its dependencies
      *
      * @param  array{ metaFile: string, phpFiles: string[] }  $block
      *
@@ -164,13 +187,38 @@ class BlockLoader
      */
     protected function loadBlock(array $block): void
     {
-        if (! empty($block['phpFiles'])) {
-            foreach ($block['phpFiles'] as $phpFile) {
-                require_once $phpFile;
-            }
-        }
+        $this->loadBlockDependencies($block);
 
         \register_block_type($block['metaFile']);
+    }
+
+    /**
+     * Load block dependencies
+     *
+     * @param  array  $block
+     * @return void
+     */
+    protected function loadBlockDependencies(array $block): void
+    {
+        $dir = dirname($block['metaFile']);
+        $isJsonRequest = \wp_is_json_request();
+        $deps = [];
+
+        if (isset($block['phpScript'])) {
+            $deps = $block['phpScript'];
+        }
+
+        if (isset($block['editorPhpScript']) && ($isJsonRequest || \wp_should_load_block_editor_scripts_and_styles())) {
+            $deps = array_merge($deps, $block['editorPhpScript']);
+        }
+
+        if (isset($block['viewPhpScript']) && (! $isJsonRequest && ! \is_admin())) {
+            $deps = array_merge($deps, $block['viewPhpScript']);
+        }
+
+        foreach ($deps as $dep) {
+            require $dir . "/" . $dep;
+        }
     }
 
     /**
@@ -181,8 +229,11 @@ class BlockLoader
      *
      * @return void
      */
-    protected function updateBlocksCacheFile(string $cacheFile, array $blocksData): void
-    {
+    protected
+    function updateBlocksCacheFile(
+        string $cacheFile,
+        array $blocksData
+    ): void {
         \file_put_contents($cacheFile, "<?php return " . var_export($blocksData, true) . ";");
     }
 
@@ -193,8 +244,10 @@ class BlockLoader
      *
      * @return void
      */
-    protected function loadBlocksFromCacheFile(string $cacheFile): void
-    {
+    protected
+    function loadBlocksFromCacheFile(
+        string $cacheFile
+    ): void {
         $this->loadBlocks(require $cacheFile);
     }
 
@@ -203,7 +256,8 @@ class BlockLoader
      *
      * @return string[]
      */
-    public function deleteCacheFiles(): array
+    public
+    function deleteCacheFiles(): array
     {
         $deletedFiles = [];
         foreach ($this->blockPaths as $path) {
