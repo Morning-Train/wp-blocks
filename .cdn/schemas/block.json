@@ -8,6 +8,48 @@
         "renderView": {
             "type": "string",
             "description": "Blade template file loaded on the server when rendering a block."
+        },
+        "phpScript": {
+            "description": "Block type PHP dependency. This will be loaded on every request.",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        "viewPhpScript": {
+            "description": "Block type frontend PHP dependency. This will be loaded on every frontend request.",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        "editorPhpScript": {
+            "description": "Block type editor PHP dependency. This will be loaded on whenever the block gets renderes by the editor.",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
         }
     }
 }
